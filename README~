@@ -1,0 +1,7 @@
+For testing just run
+python LanguageDetect.py
+and then, enter an example
+
+The model is stored in the .pickle file.
+
+For training, change the read_from_file_and_test flag in the main function to False and run.

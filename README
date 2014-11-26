@@ -1,0 +1,90 @@
+For testing just run
+python LanguageDetect.py
+and then, enter an example
+
+The model is stored in the .pickle file.
+
+For training, change the read_from_file_and_test flag in the main function to False and run.
+
+
+
+
+
+Network Design
+I chose to make my neural network with objects as I felt it lead to a cleaner albeit slower
+implementation.
+The class Neuron has activation and a list of weights. There as many weights in a neuron as there
+are neurons in the previous layer. The feed_forward method abstracts the weighted sum and
+sigmoid at the neurons. Every neuron can thus compute its own activation.
+The class NeuralNetwork has the learning rate alpha, and two lists for hidden and output neurons.
+My network has 5 input neurons, 5 hidden neurons and 3 output neurons.
+
+Feature Selection
+I decided to use the following features for the three languages when I evaluate the training data.
+The number of words that end in vowels is a very strong indicator for Italian.
+Presence of the bigram “ij” for Dutch. “ij” has a heavier weight in my features as it is an alphabet in
+Dutch and almost never occurs in the others.
+Number of words with more than 8 characters indicating Dutch as dutch has frequent long words.
+The number of occurrences of the most frequent bigram “th” as part of the most frequent word
+“the” is a good feature to pin down English. As is the bigram “ed” at the end of words for English in
+the past tense as most Wikipedia articles are.
+The raw feature counts are scaled to the length of the example to represent the fraction of the text
+the feature occurs in giving me a feature list in the range of [0, 1].
+Data gathering and data set construction.
+I used the wikis for the three languages as instructed. But only about 25% of the data is Wikipedia.
+The rest if from Project Gutenberg. I got three novels in text format for the three languages. A small
+python script and some unix commands gave me my data set. The python script makes examples of
+random word count between 10 and a 200 words.
+I have a training file for each language. There is an example on each line. The test and validation
+set were made in the same way. Each language thus has training, validation and testing sets.
+Each training set has 600 examples for a total of 1800 examples for the three languages.
+The validation set has 300 examples each for a total of 900 examples in the set for all three
+languages.
+The testing set is the same size as the validation set, but has different examples.
+Training process:
+All three training files are read and evaluated. The evaluation takes in a block of text and returns a
+list of features that represent the text. This is used as input to the neural network. The output is a list
+where the correct class is a 1 and the rest are 0s.
+For instance, the text:
+Led Zeppelin's next album, Houses of the Holy, was released in March 1973. It featured further
+experimentation by the band, who expanded their use of synthesisers and mellotron orchestration.
+The predominately orange album cover, designed by the London-based design group Hipgnosis,
+depicts images of nude children climbing the Giant's Causeway in Northern Ireland. Although the
+children are not shown from the front, the cover was controversial at the time of the album's
+release. As with the band's fourth album, neither their name nor the album title was printed on the
+sleeve
+is evaluated as [0.2527, 0.0329, 0.0329, 0.4615] and the corresponding output classs for training is
+[1, 0, 0] for English.
+All the examples containing (input, output) are shuffled so the network is not trained on the classes sequentially.
+The feed forward mechanism is implemented in a separate function so I can test novel examples
+easily.
+
+Backpropogation:
+The number of epochs is given as input to the back_propogation method. In each epoch, the
+network is trained on all examples and the error is recorded. After each epoch, the neural network is
+validated on the validation set to keep track of how well is the network leaning. Ideally we'd like to
+see a decrease in the errors after each epoch.
+I use sum of squared error as the metric for error.
+To avoid overfitting, I use a threshold value of validation error and stop training once it drops below
+the threshold.
+I tried a lot of other things. I let it run for different values of alpha, epochs and number of hidden
+layers before settling for one set of values.
+I did three random restarts and chose the best out of the three models based on error in the validtion
+set and test set accuracy.
+I used matplotlib to help me with these decisions.
+
+Testing:
+Once training is done, the user is prompted for the novel input through standard input. The user
+must enter a piece of text and hit Enter. The neural network returns what language it thinks the text
+belongs to.
+The user can also enter “test” at the input followed by three test files in the order English, Italian
+and Dutch. The network classifies all these and prints a confusion matrix for the given test set. The
+user can also enter “default” to test with files named en_test, it_test and nl_test included with the
+code.
+
+I let my model classify the text of 15 randomly selected novels, 5 from each language to give a total
+of more than 11,000 examples and got an accuracy of 98.87%.
+
+That is a sufficiently high accuracy for a test set that is 6 times larger than the training set.
+I have included these big test files. They have “_big” in their names.
+The accuracy of the model over the test set is also printed.
